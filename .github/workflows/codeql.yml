@@ -7,7 +7,7 @@ on:
 
 jobs:
   codeql:
-    if: startsWith(github.head_ref, 'F1/')
+    if: startsWith(github.head_ref, 'F1')
     runs-on: ubuntu-latest
 
     steps:
