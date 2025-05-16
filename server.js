@@ -1,78 +1,23 @@
-const express = require("express");
-const app = express();
-const PORT = 5000;
-const userData = require("./MOCK_DATA.json");
-const graphql = require("graphql")
-const { GraphQLObjectType, GraphQLSchema, GraphQLList, GraphQLID, GraphQLInt, GraphQLString } = graphql
-const { graphqlHTTP } = require("express-graphql")
+// vulnerable.js
 
-const UserType = new GraphQLObjectType({
-    name: "User",
-    fields: () => ({
-        id: { type: GraphQLInt },
-        firstName: { type: GraphQLString },
-        lastName: { type: GraphQLString },
-        email: { type: GraphQLString },
-        password: { type: GraphQLString },
-    })
-})
+const http = require('http');
+const url = require('url');
 
-const RootQuery = new GraphQLObjectType({
-    name: "RootQueryType",
-    fields: {
-        getAllUsers: {
-            type: new GraphQLList(UserType),
-            args: { id: {type: GraphQLInt}},
-            resolve(parent, args) {
-                return userData;
-            }
-        },
-        findUserById: {
-            type: UserType,
-            description: "fetch single user",
-            args: { id: {type: GraphQLInt}},
-            resolve(parent, args) {
-                return userData.find((a) => a.id == args.id);
-            }
-        }
-    }
-})
-const Mutation = new GraphQLObjectType({
-    name: "Mutation",
-    fields: {
-        createUser: {
-            type: UserType,
-            args: {
-                firstName: {type: GraphQLString},
-                lastName: { type: GraphQLString },
-                email: { type: GraphQLString },
-                password: { type: GraphQLString },
-            },
-            resolve(parent, args) {
-                userData.push({
-                    id: userData.length + 1,
-                    firstName: args.firstName,
-                    lastName: args.lastName,
-                    email: args.email,
-                    password: args.password
-                })
-                return args
-            }
-        }
-    }
-})
+http.createServer((req, res) => {
+  const query = url.parse(req.url, true).query;
+  
+  // Vulnerability 1: Command Injection (simulated)
+  const exec = require('child_process').exec;
+  exec(`echo ${query.input}`, (error, stdout, stderr) => {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end(stdout);
+  });
 
-const schema = new GraphQLSchema({query: RootQuery, mutation: Mutation})
-app.use("/graphql", graphqlHTTP({
-    schema,
-    graphiql: true,
-  })
-);
+  // Vulnerability 2: Unsafe eval usage
+  if (query.code) {
+    eval(query.code);  // Dangerous!
+  }
 
-app.get("/rest/getAllUsers", (req, res) => {
-    res.send(userData)
-   });
-
-app.listen(PORT, () => {
-  console.log("Server running");
-});
+  // Vulnerability 3: Possible XSS (not escaped output)
+  res.write(`<h1>Hello ${query.name}</h1>`);
+}).listen(8080);
