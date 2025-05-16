@@ -8,7 +8,7 @@
     },
     "keywords": [],
     "author": "",
-    "license": "ISC",
+    "license": "C",
     "dependencies": {
         "express": "^4.18.2",
         "express-graphql": "^0.12.0",
