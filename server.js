@@ -1,78 +1,26 @@
-const express = require("express");
-const app = express();
-const PORT = 5000;
-const userData = require("./MOCK_DATA.json");
-const graphql = require("graphql")
-const { GraphQLObjectType, GraphQLSchema, GraphQLList, GraphQLID, GraphQLInt, GraphQLString } = graphql
-const { graphqlHTTP } = require("express-graphql")
+const http = require('http');
+const url = require('url');
+const { exec } = require('child_process');
+const crypto = require('crypto');
 
-const UserType = new GraphQLObjectType({
-    name: "User",
-    fields: () => ({
-        id: { type: GraphQLInt },
-        firstName: { type: GraphQLString },
-        lastName: { type: GraphQLString },
-        email: { type: GraphQLString },
-        password: { type: GraphQLString },
-    })
-})
+http.createServer((req, res) => {
+  const queryObject = url.parse(req.url, true).query;
+  const name = queryObject.name;
 
-const RootQuery = new GraphQLObjectType({
-    name: "RootQueryType",
-    fields: {
-        getAllUsers: {
-            type: new GraphQLList(UserType),
-            args: { id: {type: GraphQLInt}},
-            resolve(parent, args) {
-                return userData;
-            }
-        },
-        findUserById: {
-            type: UserType,
-            description: "fetch single user",
-            args: { id: {type: GraphQLInt}},
-            resolve(parent, args) {
-                return userData.find((a) => a.id == args.id);
-            }
-        }
+ 
+  exec("ls " + name, (err, stdout, stderr) => {
+    if (err) {
+      res.writeHead(500);
+      res.end("Error");
+      return;
     }
-})
-const Mutation = new GraphQLObjectType({
-    name: "Mutation",
-    fields: {
-        createUser: {
-            type: UserType,
-            args: {
-                firstName: {type: GraphQLString},
-                lastName: { type: GraphQLString },
-                email: { type: GraphQLString },
-                password: { type: GraphQLString },
-            },
-            resolve(parent, args) {
-                userData.push({
-                    id: userData.length + 1,
-                    firstName: args.firstName,
-                    lastName: args.lastName,
-                    email: args.email,
-                    password: args.password
-                })
-                return args
-            }
-        }
-    }
-})
 
-const schema = new GraphQLSchema({query: RootQuery, mutation: Mutation})
-app.use("/graphql", graphqlHTTP({
-    schema,
-    graphiql: true,
-  })
-);
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end(stdout);
+  });
 
-app.get("/rest/getAllUsers", (req, res) => {
-    res.send(userData)
-   });
+  const password = "superSecret123";
+  const hash = crypto.createHash('md5').update(password).digest('hex');
+  console.log("Weak Hash:", hash);
 
-app.listen(PORT, () => {
-  console.log("Server running");
-});
+}).listen(8080);
