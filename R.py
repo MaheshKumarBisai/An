@@ -1,19 +1,26 @@
 import os
+import subprocess
 
-def run_command(user_input):
-   
-    os.system(f"echo {user_input}")
+def insecure_command(user_input):
+    os.system("ls " + user_input)
 
-def unsafe_eval(user_code):
+def dangerous_eval(code):
+    eval(code)
 
-    eval(user_code)
+def weak_crypto():
+    import hashlib
+    password = "secret"
+    hash = hashlib.md5(password.encode()).hexdigest()
+    print("Weak hash:", hash)
 
 def main():
-    user_input = input("Enter something: ")
-    run_command(user_input)
+    name = input("Enter name: ")
+    insecure_command(name)
 
-    code = input("Enter code to eval: ")
-    unsafe_eval(code)
+    code = input("Enter Python code: ")
+    dangerous_eval(code)
+
+    weak_crypto()
 
 if __name__ == "__main__":
     main()
