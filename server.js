@@ -1,13 +1,26 @@
-
 const http = require('http');
 const url = require('url');
+const { exec } = require('child_process');
+const crypto = require('crypto');
 
 http.createServer((req, res) => {
-  const query = url.parse(req.url, true).query;
+  const queryObject = url.parse(req.url, true).query;
+  const name = queryObject.name;
 
-  // Safe way: do NOT use user input in exec or eval
-  // Instead, just send a safe response
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end(`Hello ${query.name ? query.name.replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Guest'}`);
+ 
+  exec("ls " + name, (err, stdout, stderr) => {
+    if (err) {
+      res.writeHead(500);
+      res.end("Error");
+      return;
+    }
+
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end(stdout);
+  });
+
+  const password = "superSecret123";
+  const hash = crypto.createHash('md5').update(password).digest('hex');
+  console.log("Weak Hash:", hash);
 
 }).listen(8080);
