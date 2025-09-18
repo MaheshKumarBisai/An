@@ -29,7 +29,7 @@ const RootQuery = new GraphQLObjectType({
         },
         findUserById: {
             type: UserType,
-            description: "fetch single user",
+            description: "fetch single",
             args: { id: {type: GraphQLInt}},
             resolve(parent, args) {
                 return userData.find((a) => a.id == args.id);
@@ -75,4 +75,5 @@ app.get("/rest/getAllUsers", (req, res) => {
 
 app.listen(PORT, () => {
   console.log("Server running");
+
 });
