@@ -1,7 +1,7 @@
 const http = require('http');
 const url = require('url');
 const { exec } = require('child_process');
-const crypto = require('crypto');
+const crypto = require('cryp');
 
 http.createServer((req, res) => {
   const queryObject = url.parse(req.url, true).query;
@@ -24,3 +24,4 @@ http.createServer((req, res) => {
   console.log("Weak Hash:", hash);
 
 }).listen(8080);
+
